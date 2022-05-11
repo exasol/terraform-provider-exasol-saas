@@ -1,0 +1,2229 @@
+openapi: 3.0.0
+info:
+  description: "## Authentication\n\nThe REST API can be used with your Personal Access\
+    \ Token (PAT). You don't know what a PAT is, check our documentation \n[here](https://docs.exasol.com/saas/administration/access_mngt/access_token.htm).\n\
+    \nAfter you created a PAT click on Authorize and add your PAT under BearerAuth.\n"
+  title: Exasol SaaS REST-API
+  version: "1.0"
+servers:
+- description: Production
+  url: https://cloud.exasol.com
+tags:
+- description: Calls to interact with your database
+  name: Databases
+- description: Calls to interact with your clusters
+  name: Clusters
+- description: Calls to get platform information
+  name: Platform
+- description: Calls to manage users
+  name: Users
+- description: Get usage
+  name: Usage
+paths:
+  /api/v1/accounts/{accountID}/databases:
+    description: Create a new database
+    get:
+      description: List databases
+      operationId: ListDatabases
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - status: running
+                id: Rn3x8gcEInnHt205B4c7QZ
+                name: Database01
+                clusters:
+                  total: 1
+                  running: 1
+                provider: aws
+                region: eu-central-1
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+              schema:
+                items:
+                  $ref: '#/components/schemas/Database'
+                type: array
+          description: Databases
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:use
+      summary: List databases
+      tags:
+      - Databases
+    post:
+      description: Create a new database
+      operationId: CreateDatabase
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              name: DatabaseName
+              initialCluster:
+                name: ClusterName
+                size: XS
+                autoStop:
+                  enabled: true
+                  idleTime: 120
+              provider: aws
+              region: eu-central-1
+            schema:
+              $ref: '#/components/schemas/CreateDatabase'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                status: running
+                id: ""
+                name: DatabaseName
+                clusters:
+                  total: 1
+                  running: 1
+                provider: aws
+                region: eu-central-1
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+              schema:
+                $ref: '#/components/schemas/Database'
+          description: The new database
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Create database
+      tags:
+      - Databases
+    summary: Create database
+  /api/v1/accounts/{accountID}/databases/{databaseID}:
+    delete:
+      description: Delete the database and all cluster
+      operationId: DeleteDatabase
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Delete database
+      tags:
+      - Databases
+    description: Update database
+    get:
+      description: Get the database
+      operationId: GetDatabase
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                status: running
+                id: Rn3x8gcEInnHt205B4c7QZ
+                name: Database01
+                clusters:
+                  total: 1
+                  running: 1
+                provider: aws
+                region: eu-central-1
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+              schema:
+                $ref: '#/components/schemas/Database'
+          description: Database
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:use
+      summary: Get database
+      tags:
+      - Databases
+    put:
+      description: Update database
+      operationId: UpdateDatabase
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              name: newName
+            schema:
+              $ref: '#/components/schemas/UpdateDatabase'
+        required: true
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Update database
+      tags:
+      - Databases
+    summary: Update database
+  /api/v1/accounts/{accountID}/databases/{databaseID}/clusters:
+    description: Create a new cluster
+    get:
+      description: List clusters from a database
+      operationId: ListClusters
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - status: running
+                id: Rn3x8gcEInnHt205B4c7QZ
+                name: Cluster01
+                size: XL
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+                mainCluster: true
+                autoStop:
+                  enabled: true
+                  idleTime: 120
+              schema:
+                items:
+                  $ref: '#/components/schemas/Cluster'
+                type: array
+          description: Clusters
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:use
+      summary: List clusters
+      tags:
+      - Clusters
+    post:
+      description: Create a new cluster
+      operationId: CreateCluster
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              name: Clustername
+              size: XS
+              autoStop:
+                enabled: true
+                idleTime: 120
+            schema:
+              $ref: '#/components/schemas/CreateCluster'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                status: running
+                id: Rn3x8gcEInnHt205B4c7QZ
+                name: Cluster01
+                size: XS
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+                mainCluster: true
+                autoStop:
+                  enabled: true
+                  idleTime: 120
+              schema:
+                $ref: '#/components/schemas/Cluster'
+          description: The new cluster
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Create cluster
+      tags:
+      - Clusters
+    summary: Create cluster
+  /api/v1/accounts/{accountID}/databases/{databaseID}/clusters/{clusterID}:
+    delete:
+      description: Delete the cluster, if main cluster is deleted, the whole database
+        will be deleted.
+      operationId: DeleteCluster
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cluster ID
+        explode: false
+        in: path
+        name: clusterID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Delete cluster
+      tags:
+      - Clusters
+    description: |-
+      Update the cluster with the specified ID.
+       Only metadata can be changed. To scale the cluster size, use the scale cluster endpoint.
+    get:
+      description: Get cluster
+      operationId: GetCluster
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cluster ID
+        explode: false
+        in: path
+        name: clusterID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                status: running
+                id: Rn3x8gcEInnHt205B4c7QZ
+                name: Cluster01
+                size: XL
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+                mainCluster: true
+                autoStop:
+                  enabled: true
+                  idleTime: 120
+              schema:
+                $ref: '#/components/schemas/Cluster'
+          description: Cluster
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:use
+      summary: Get cluster
+      tags:
+      - Clusters
+    put:
+      description: |-
+        Update the cluster with the specified ID.
+         Only metadata can be changed. To scale the cluster size, use the scale cluster endpoint.
+      operationId: UpdateCluster
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cluster ID
+        explode: false
+        in: path
+        name: clusterID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              name: newName
+              autoStop:
+                enabled: true
+                idleTime: 120
+            schema:
+              $ref: '#/components/schemas/UpdateCluster'
+        required: true
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Update cluster
+      tags:
+      - Clusters
+    summary: Update cluster
+  /api/v1/accounts/{accountID}/databases/{databaseID}/clusters/{clusterID}/connect:
+    description: Get connection information
+    get:
+      description: Get connection information
+      operationId: GetClusterConnection
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cluster ID
+        explode: false
+        in: path
+        name: clusterID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                dns: 7KtT8FDvSfGIQvE1E8X14E.pdqj8l2KzWTHHZkdpFba4v.exasol.com
+                port: 8563
+                jdbc: jdbc:exa:vvKBahRRL3bBE3DgWrSYJ-.pdqj8l2KzWTHHZkdpFba4v.exasol.com
+                ips:
+                  private:
+                  - mock.cloud-dev.exasol.com
+                  - 127.0.0.2
+                  public:
+                  - 127.0.0.1
+                  - 127.0.0.2
+                dbUsername: JohnDow
+              schema:
+                $ref: '#/components/schemas/Connections'
+          description: Cluster
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:use
+      summary: Get connection information
+      tags:
+      - Clusters
+    summary: Get connection information
+  /api/v1/accounts/{accountID}/databases/{databaseID}/clusters/{clusterID}/scale:
+    description: Scale cluster
+    put:
+      description: Scale cluster
+      operationId: ScaleCluster
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cluster ID
+        explode: false
+        in: path
+        name: clusterID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              size: S
+            schema:
+              $ref: '#/components/schemas/ScaleCluster'
+        required: true
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Scale cluster
+      tags:
+      - Clusters
+    summary: Scale cluster
+  /api/v1/accounts/{accountID}/databases/{databaseID}/clusters/{clusterID}/start:
+    description: Start cluster
+    put:
+      description: Start cluster
+      operationId: StartCluster
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cluster ID
+        explode: false
+        in: path
+        name: clusterID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Start cluster
+      tags:
+      - Clusters
+    summary: Start cluster
+  /api/v1/accounts/{accountID}/databases/{databaseID}/clusters/{clusterID}/stop:
+    description: Stop cluster
+    put:
+      description: Stop cluster
+      operationId: StopCluster
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Cluster ID
+        explode: false
+        in: path
+        name: clusterID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Stop cluster
+      tags:
+      - Clusters
+    summary: Stop cluster
+  /api/v1/accounts/{accountID}/databases/{databaseID}/start:
+    description: |-
+      Start database
+      If database is from type main, workers will be also started
+    put:
+      description: |-
+        Start database
+        If database is from type main, workers will be also started
+      operationId: StartDatabase
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Start database
+      tags:
+      - Databases
+    summary: Start database
+  /api/v1/accounts/{accountID}/databases/{databaseID}/stop:
+    description: |-
+      Stop database
+      If database is from type main, workers will be also stopped
+    put:
+      description: |-
+        Stop database
+        If database is from type main, workers will be also stopped
+      operationId: StopDatabase
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Database ID
+        explode: false
+        in: path
+        name: databaseID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - databases:operate
+      summary: Stop database
+      tags:
+      - Databases
+    summary: Stop database
+  /api/v1/accounts/{accountID}/security/allowlist_ip:
+    description: Add security rule to allow access from CIDR
+    get:
+      description: List security rules (CIDR)
+      operationId: ListAllowedIPs
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: Rn3x8gcEInnHt205B4c7QZ
+                name: Company Network
+                cidrIp: 127.0.0.1/32
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+              schema:
+                items:
+                  $ref: '#/components/schemas/AllowedIP'
+                type: array
+          description: Security rule CIDR
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - security:read
+      summary: List security rules (CIDR)
+      tags:
+      - Security
+    post:
+      description: Add security rule to allow access from CIDR
+      operationId: AddAllowedIP
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              name: Rule name
+              cidrIp: 127.0.0.1/32
+            schema:
+              $ref: '#/components/schemas/CreateAllowedIP'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: Rn3x8gcEInnHt205B4c7QZ
+                name: Company Network
+                cidrIp: 127.0.0.1/32
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+              schema:
+                $ref: '#/components/schemas/AllowedIP'
+          description: Security rule CIDR
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - security:write
+      summary: Add security rule (CIDR)
+      tags:
+      - Security
+    summary: Add security rule (CIDR)
+  /api/v1/accounts/{accountID}/security/allowlist_ip/{ID}:
+    delete:
+      description: Delete security rule (CIDR). No access to database possible after
+        deletion from CIDR
+      operationId: DeleteAllowedIP
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of rule
+        explode: false
+        in: path
+        name: ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - security:write
+      summary: Delete security rule (CIDR)
+      tags:
+      - Security
+    description: Delete security rule (CIDR). No access to database possible after
+      deletion from CIDR
+    get:
+      description: Get security rule (CIDR)
+      operationId: GetAllowedIP
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of rule
+        explode: false
+        in: path
+        name: ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                id: Rn3x8gcEInnHt205B4c7QZ
+                name: Company Network
+                cidrIp: 127.0.0.1/32
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+              schema:
+                $ref: '#/components/schemas/AllowedIP'
+          description: Security rule CIDR
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - security:read
+      summary: Get security rule (CIDR)
+      tags:
+      - Security
+    put:
+      description: Update security rule (CIDR)
+      operationId: UpdateAllowedIP
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: ID of rule
+        explode: false
+        in: path
+        name: ID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              name: Rulename
+              cidrIp: 127.0.0.1/32
+            schema:
+              $ref: '#/components/schemas/UpdateAllowedIP'
+        required: true
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - security:write
+      summary: Update security rule (CIDR)
+      tags:
+      - Security
+    summary: Delete security rule (CIDR)
+  /api/v1/accounts/{accountID}/usage:
+    description: Show usage for one month
+    get:
+      description: Show usage for one month
+      operationId: GetUsage
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: YYYY-MM
+        explode: true
+        in: query
+        name: yearMonth
+        required: true
+        schema:
+          type: string
+        style: form
+      - description: Response format
+        explode: true
+        in: query
+        name: type
+        required: false
+        schema:
+          enum:
+          - json
+          - csv
+          type: string
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+                "2021-08-01T00:00:00Z":
+                - id: Rn3x8gcEInnHt205B4c7QZ
+                  name: Database01
+                  usedStorage: 23.4
+                  clusters:
+                  - id: 7KtT8FDvSfGIQvE1E8X14E
+                    size: M
+                    name: Cluster01
+                    compute: 23.4
+                    outSameRegion: 23.4
+                    outDifferentRegion: 23.4
+                    outInternet: 23.4
+              schema:
+                additionalProperties:
+                  items:
+                    $ref: '#/components/schemas/UsageDatabase'
+                  type: array
+                type: object
+          description: Usage
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - users:read
+      summary: Get usage
+      tags:
+      - Usage
+    summary: Get usage
+  /api/v1/accounts/{accountID}/users:
+    description: List users for account
+    get:
+      description: List users for account
+      operationId: ListUsers
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: Get next page of users
+        explode: true
+        in: query
+        name: next
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Filter users by email
+        explode: true
+        in: query
+        name: filter
+        required: false
+        schema:
+          type: string
+        style: form
+      - description: Limit amount of user in response
+        explode: true
+        in: query
+        name: limit
+        required: false
+        schema:
+          type: integer
+        style: form
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - email: john.doe@email.com
+                firstName: John
+                lastName: Doe
+                id: Rn3x8gcEInnHt205B4c7QZ
+                createdAt: 2021-01-02T15:04:05Z07:00
+                createdBy: 7KtT8FDvSfGIQvE1E8X14E
+                status: active
+                databases:
+                - id: vvKBahRRL3bBE3DgWrSYJ-"
+                  name: Database01
+                role:
+                  id: Rn3x8gcEInnHt205B4c7QZ
+                  name: Member
+                dbUsername: userName
+                isDeletable: false
+              schema:
+                items:
+                  $ref: '#/components/schemas/Profile'
+                type: array
+          description: List of users
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - users:read
+      summary: List users
+      tags:
+      - Users
+    summary: List users
+  /api/v1/accounts/{accountID}/users/{userID}:
+    delete:
+      description: Remove user from account
+      operationId: DeleteUser
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: User ID
+        explode: false
+        in: path
+        name: userID
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - users:write
+      summary: Remove user
+      tags:
+      - Users
+    description: Remove user from account
+    patch:
+      description: Patch user
+      operationId: PatchUser
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: User ID
+        explode: false
+        in: path
+        name: userID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              roleID: roleID
+              databases:
+                delete:
+                - ID1
+                add:
+                - ID2
+              dbUsername: roleID
+            schema:
+              $ref: '#/components/schemas/PatchUser'
+        required: true
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - users:write
+      summary: Patch user
+      tags:
+      - Users
+    put:
+      description: Update user
+      operationId: UpdateUser
+      parameters:
+      - description: Account ID
+        explode: false
+        in: path
+        name: accountID
+        required: true
+        schema:
+          type: string
+        style: simple
+      - description: User ID
+        explode: false
+        in: path
+        name: userID
+        required: true
+        schema:
+          type: string
+        style: simple
+      requestBody:
+        content:
+          application/json:
+            example:
+              roleID: roleID
+              databases:
+              - databaseID
+              dbUsername: newName
+            schema:
+              $ref: '#/components/schemas/UpdateUser'
+        required: true
+      responses:
+        "204":
+          description: OK
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth:
+        - users:write
+      summary: Update user
+      tags:
+      - Users
+    summary: Remove user
+  /api/v1/platforms:
+    description: Get available platforms
+    get:
+      description: Get available platforms
+      operationId: ListPlatforms
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: aws
+                name: Amazon
+              schema:
+                items:
+                  $ref: '#/components/schemas/Platform'
+                type: array
+          description: List of all platforms
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth: []
+      summary: List platforms
+      tags:
+      - Platform
+    summary: List platforms
+  /api/v1/platforms/{platform}/regions:
+    description: Get available regions for platform
+    get:
+      description: Get available regions for platform
+      operationId: ListRegions
+      parameters:
+      - description: Platform ID
+        explode: false
+        in: path
+        name: platform
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - id: eu-central-1
+                name: EU (Frankfurt)
+                priceMultiplier: 1
+                storagePrice: 1
+              schema:
+                items:
+                  $ref: '#/components/schemas/Region'
+                type: array
+          description: List of all regions
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth: []
+      summary: Get regions for platform
+      tags:
+      - Platform
+    summary: Get regions for platform
+  /api/v1/platforms/{platform}/sizes:
+    description: Get available cluster sizes for platform
+    get:
+      description: Get available cluster sizes for platform
+      operationId: ListClusterSizes
+      parameters:
+      - description: Platform ID
+        explode: false
+        in: path
+        name: platform
+        required: true
+        schema:
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              example:
+              - size: XL
+                price: 3
+                vcpu: 16
+                ram: 128
+                isDefault: false
+                name: XLarge
+              schema:
+                items:
+                  $ref: '#/components/schemas/ClusterSize'
+                type: array
+          description: List of all cluster sizes
+        default:
+          content:
+            application/json:
+              example:
+                code: 500
+                message: Something went wrong.
+                requestID: Rn3x8gcEInnHt205B4c7QZ
+                timestamp: 2021-01-02T15:04:05Z07:00
+              schema:
+                $ref: '#/components/schemas/APIError'
+          description: Default error
+      security:
+      - BearerAuth: []
+      summary: Get cluster sizes for platform
+      tags:
+      - Platform
+    summary: Get cluster sizes for platform
+components:
+  schemas:
+    APIError:
+      additionalProperties: false
+      properties:
+        code:
+          type: integer
+        message:
+          type: string
+        causes:
+          additionalProperties:
+            type: boolean
+          type: object
+        requestID:
+          type: string
+        timestamp:
+          format: date-time
+          type: string
+        apiID:
+          type: string
+      required:
+      - code
+      - message
+      type: object
+    AllowedIP:
+      additionalProperties: false
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        deletedAt: 2000-01-23T04:56:07.000+00:00
+        createdBy: createdBy
+        name: name
+        id: id
+        cidrIp: cidrIp
+        deletedBy: deletedBy
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        cidrIp:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        createdBy:
+          type: string
+        deletedBy:
+          type: string
+        deletedAt:
+          format: date-time
+          type: string
+      required:
+      - cidrIp
+      - createdAt
+      - createdBy
+      - id
+      - name
+      type: object
+    AutoStop:
+      additionalProperties: false
+      example:
+        idleTime: 0
+        enabled: true
+      properties:
+        enabled:
+          type: boolean
+        idleTime:
+          type: integer
+      required:
+      - enabled
+      - idleTime
+      type: object
+    Cluster:
+      additionalProperties: false
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        autoStop:
+          idleTime: 0
+          enabled: true
+        deletedAt: 2000-01-23T04:56:07.000+00:00
+        size: size
+        createdBy: createdBy
+        name: name
+        id: id
+        mainCluster: true
+        deletedBy: deletedBy
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        deletedAt:
+          format: date-time
+          type: string
+        deletedBy:
+          type: string
+        id:
+          type: string
+        name:
+          type: string
+        size:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        createdBy:
+          type: string
+        mainCluster:
+          type: boolean
+        autoStop:
+          $ref: '#/components/schemas/AutoStop'
+      required:
+      - createdAt
+      - createdBy
+      - id
+      - mainCluster
+      - name
+      - size
+      - status
+      type: object
+    ClusterOverview:
+      additionalProperties: false
+      example:
+        running: 6
+        total: 0
+      properties:
+        total:
+          type: integer
+        running:
+          type: integer
+      required:
+      - running
+      - total
+      type: object
+    ClusterSize:
+      additionalProperties: false
+      example:
+        isDefault: true
+        size: size
+        vcpu: 6.027456183070403
+        price: 0.8008281904610115
+        name: name
+        ram: 1.4658129805029452
+      properties:
+        size:
+          type: string
+        price:
+          type: number
+        vcpu:
+          type: number
+        ram:
+          type: number
+        isDefault:
+          type: boolean
+        name:
+          type: string
+      required:
+      - isDefault
+      - name
+      - price
+      - ram
+      - size
+      - vcpu
+      type: object
+    ConnectionIPs:
+      additionalProperties: false
+      example:
+        private:
+        - private
+        - private
+        public:
+        - public
+        - public
+      properties:
+        private:
+          items:
+            type: string
+          type: array
+        public:
+          items:
+            type: string
+          type: array
+      required:
+      - private
+      - public
+      type: object
+    Connections:
+      additionalProperties: false
+      example:
+        dbUsername: dbUsername
+        port: 0
+        dns: dns
+        jdbc: jdbc
+        ips:
+          private:
+          - private
+          - private
+          public:
+          - public
+          - public
+      properties:
+        dns:
+          type: string
+        port:
+          type: integer
+        jdbc:
+          type: string
+        ips:
+          $ref: '#/components/schemas/ConnectionIPs'
+        dbUsername:
+          type: string
+      required:
+      - dbUsername
+      - dns
+      - ips
+      - jdbc
+      - port
+      type: object
+    CreateAllowedIP:
+      additionalProperties: false
+      example:
+        name: name
+        cidrIp: cidrIp
+      properties:
+        name:
+          type: string
+        cidrIp:
+          type: string
+      required:
+      - cidrIp
+      - name
+      type: object
+    CreateCluster:
+      additionalProperties: false
+      example:
+        autoStop:
+          idleTime: 0
+          enabled: true
+        size: size
+        name: name
+      properties:
+        name:
+          type: string
+        size:
+          type: string
+        autoStop:
+          $ref: '#/components/schemas/AutoStop'
+      required:
+      - name
+      - size
+      type: object
+    CreateDatabase:
+      additionalProperties: false
+      example:
+        initialCluster:
+          autoStop:
+            idleTime: 0
+            enabled: true
+          size: size
+          name: name
+        provider: provider
+        name: name
+        region: region
+      properties:
+        name:
+          type: string
+        initialCluster:
+          $ref: '#/components/schemas/CreateCluster'
+        provider:
+          type: string
+        region:
+          type: string
+      required:
+      - initialCluster
+      - name
+      - provider
+      - region
+      type: object
+    Database:
+      additionalProperties: false
+      example:
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        deletedAt: 2000-01-23T04:56:07.000+00:00
+        provider: provider
+        createdBy: createdBy
+        name: name
+        id: id
+        region: region
+        integrations:
+        - name: name
+          id: id
+          url: url
+        - name: name
+          id: id
+          url: url
+        clusters:
+          running: 6
+          total: 0
+        deletedBy: deletedBy
+      properties:
+        status:
+          $ref: '#/components/schemas/Status'
+        id:
+          type: string
+        name:
+          type: string
+        clusters:
+          $ref: '#/components/schemas/ClusterOverview'
+        integrations:
+          items:
+            $ref: '#/components/schemas/Integrations'
+          type: array
+        provider:
+          type: string
+        region:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        createdBy:
+          type: string
+        deletedBy:
+          type: string
+        deletedAt:
+          format: date-time
+          type: string
+      required:
+      - clusters
+      - createdAt
+      - createdBy
+      - id
+      - name
+      - provider
+      - region
+      - status
+      type: object
+    Integrations:
+      additionalProperties: false
+      example:
+        name: name
+        id: id
+        url: url
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        url:
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    PatchDatabases:
+      additionalProperties: false
+      example:
+        add:
+        - add
+        - add
+        delete:
+        - delete
+        - delete
+      properties:
+        delete:
+          items:
+            type: string
+          type: array
+        add:
+          items:
+            type: string
+          type: array
+      required:
+      - add
+      - delete
+      type: object
+    PatchUser:
+      additionalProperties: false
+      example:
+        databases:
+          add:
+          - add
+          - add
+          delete:
+          - delete
+          - delete
+        dbUsername: dbUsername
+        roleID: roleID
+      properties:
+        roleID:
+          type: string
+        databases:
+          $ref: '#/components/schemas/PatchDatabases'
+        dbUsername:
+          type: string
+      type: object
+    Platform:
+      additionalProperties: false
+      example:
+        name: name
+        id: id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    Profile:
+      additionalProperties: false
+      example:
+        isDeletable: true
+        firstName: firstName
+        lastName: lastName
+        createdAt: 2000-01-23T04:56:07.000+00:00
+        databases:
+        - name: name
+          id: id
+        - name: name
+          id: id
+        dbUsername: dbUsername
+        role:
+          name: name
+          id: id
+        createdBy: createdBy
+        id: id
+        email: email
+      properties:
+        email:
+          type: string
+        firstName:
+          type: string
+        lastName:
+          type: string
+        id:
+          type: string
+        createdAt:
+          format: date-time
+          type: string
+        createdBy:
+          type: string
+        status:
+          $ref: '#/components/schemas/UserStatus'
+        databases:
+          items:
+            $ref: '#/components/schemas/UserDatabase'
+          type: array
+        role:
+          $ref: '#/components/schemas/UserRole'
+        dbUsername:
+          type: string
+        isDeletable:
+          type: boolean
+      required:
+      - createdAt
+      - createdBy
+      - email
+      - id
+      - isDeletable
+      - role
+      - status
+      type: object
+    Region:
+      additionalProperties: false
+      example:
+        storagePrice: 6.027456183070403
+        name: name
+        id: id
+        priceMultiplier: 0.8008281904610115
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        priceMultiplier:
+          type: number
+        storagePrice:
+          type: number
+      required:
+      - id
+      - name
+      - priceMultiplier
+      - storagePrice
+      type: object
+    ScaleCluster:
+      additionalProperties: false
+      example:
+        size: size
+      properties:
+        size:
+          type: string
+      required:
+      - size
+      type: object
+    Status:
+      enum:
+      - todelete
+      - tostart
+      - tocreate
+      - tostop
+      - creating
+      - starting
+      - running
+      - stopping
+      - stopped
+      - error
+      - maintenance
+      - deleting
+      - deleted
+      type: string
+    UpdateAllowedIP:
+      additionalProperties: false
+      example:
+        name: name
+        cidrIp: cidrIp
+      properties:
+        name:
+          type: string
+        cidrIp:
+          type: string
+      required:
+      - cidrIp
+      - name
+      type: object
+    UpdateCluster:
+      additionalProperties: false
+      example:
+        autoStop:
+          idleTime: 0
+          enabled: true
+        name: name
+      properties:
+        name:
+          type: string
+        autoStop:
+          $ref: '#/components/schemas/AutoStop'
+      required:
+      - name
+      type: object
+    UpdateDatabase:
+      additionalProperties: false
+      example:
+        name: name
+      properties:
+        name:
+          type: string
+      required:
+      - name
+      type: object
+    UpdateUser:
+      additionalProperties: false
+      example:
+        databases:
+        - databases
+        - databases
+        dbUsername: dbUsername
+        roleID: roleID
+      properties:
+        roleID:
+          type: string
+        databases:
+          items:
+            type: string
+          type: array
+        dbUsername:
+          type: string
+      required:
+      - dbUsername
+      type: object
+    UsageCluster:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        size:
+          type: string
+        name:
+          type: string
+        compute:
+          type: number
+        outSameRegion:
+          type: number
+        outDifferentRegion:
+          type: number
+        outInternet:
+          type: number
+      required:
+      - id
+      - name
+      - size
+      type: object
+    UsageDatabase:
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        usedStorage:
+          type: number
+        clusters:
+          items:
+            $ref: '#/components/schemas/UsageCluster'
+          type: array
+      required:
+      - clusters
+      - id
+      - name
+      type: object
+    UserDatabase:
+      additionalProperties: false
+      example:
+        name: name
+        id: id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    UserRole:
+      additionalProperties: false
+      example:
+        name: name
+        id: id
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    UserStatus:
+      enum:
+      - active
+      - deactivated
+      - pending
+      type: string
+  securitySchemes:
+    BearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
