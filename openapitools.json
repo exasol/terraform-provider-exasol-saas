@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenAPITools/openapi-generator-cli/master/apps/generator-cli/src/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
+    "version": "5.4.0",
+    "generators": {
+      "saas" : {
+        "generatorName": "go",
+        "inputSpec": "https://cloud.exasol.com/openapi.json",
+        "output": "internal/client",
+        "typeMappings" : {
+          "DateTime" : "string"
+        }
+      }
+    }
+  }
+}
