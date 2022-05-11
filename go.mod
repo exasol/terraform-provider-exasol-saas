@@ -3,7 +3,7 @@ module github.com/exasol/terraform-provider-exasol-saas
 go 1.17
 
 require (
-	github.com/exasol/exasol-driver-go v0.4.0
+	github.com/exasol/exasol-driver-go v0.4.2
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-docs v0.8.0
 	github.com/hashicorp/terraform-plugin-log v0.4.0
@@ -65,6 +65,7 @@ require (
 	github.com/zclconf/go-cty v1.10.0 // indirect
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5 // indirect
 	golang.org/x/net v0.0.0-20220325170049-de3da57026de // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
