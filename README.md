@@ -2,10 +2,10 @@
 
 Not ready for productive use, interface can change anytime without any warning. 
 
-# Terraform Provider Scaffolding (Terraform Plugin SDK)
+# Exasol SaaS Terraform Provider
 
 
-This template repository is built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk). 
+This repository is built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk). 
 
 
 ## Requirements
