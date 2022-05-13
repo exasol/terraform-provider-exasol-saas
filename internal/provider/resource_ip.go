@@ -3,6 +3,7 @@ package provider
 import (
 	"context"
 	"fmt"
+
 	openapi "github.com/exasol/terraform-provider-exasol-saas/internal/client"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -66,10 +67,15 @@ func resourceReadNetwork(ctx context.Context, d *schema.ResourceData, m interfac
 		return diag.FromErr(err)
 	}
 
-	err =d.Set("ip", ip)
+	err = d.Set("name", ip.Name)
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	err = d.Set("cidr_block", ip.CidrIp)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+
 	return nil
 }
 
