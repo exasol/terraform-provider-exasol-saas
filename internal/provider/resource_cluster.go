@@ -114,40 +114,9 @@ func resourceUpdateCluster(ctx context.Context, d *schema.ResourceData, m interf
 	clusterID := d.Id()
 	//size := d.Get("size").(string)
 
-	updateCluster := openapi.UpdateCluster{}
-	hasChange := false
-
-	if d.HasChange("name") {
-		oldName, newName := d.GetChange("name")
-		tflog.Debug(ctx, fmt.Sprintf("Renaming cluster %s -> %s", oldName.(string), newName.(string)), map[string]interface{}{"account": account, "database": dbID, "cluster": clusterID})
-		updateCluster.Name = newName.(string)
-		hasChange = true
-	}
-
-	if d.HasChange("autostop") {
-		oldStop, newStop := d.GetChange("autostop")
-		tflog.Debug(ctx, fmt.Sprintf("Upating autostop %s -> %s", oldStop.(string), newStop.(string)), map[string]interface{}{"account": account, "database": dbID, "cluster": clusterID})
-		if newStop != nil {
-			updateCluster.AutoStop = &openapi.AutoStop{
-				Enabled:  true,
-				IdleTime: int32(newStop.(int)),
-			}
-		}
-		if newStop == nil {
-			updateCluster.AutoStop = &openapi.AutoStop{
-				Enabled:  false,
-				IdleTime: int32(oldStop.(int)),
-			}
-		}
-		hasChange = true
-	}
-
-	if hasChange {
-		resp, err := apiClient.ClustersApi.UpdateCluster(ctx, account, dbID, clusterID).UpdateCluster(updateCluster).Execute()
-		diagnostics := handleApiError(ctx, err, resp)
-		if diagnostics != nil {
-			return diagnostics
-		}
+	diagnostics := updateCluster(ctx, d, "name", account, dbID, clusterID, apiClient)
+	if diagnostics != nil {
+		return diagnostics
 	}
 
 	return nil

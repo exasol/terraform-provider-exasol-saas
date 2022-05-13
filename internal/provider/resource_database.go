@@ -36,6 +36,18 @@ func resourceItemDatabase() *schema.Resource {
 				Description:      "The size of the database",
 				ValidateDiagFunc: validateSize,
 			},
+			"main_cluster_name": {
+				Type:             schema.TypeString,
+				Optional:         true,
+				Description:      "The name of the main cluster",
+				ValidateDiagFunc: validateName,
+				Default:          "Main",
+			},
+			"main_cluster_id": {
+				Type:        schema.TypeString,
+				Computed:    true,
+				Description: "Id of the main cluster",
+			},
 			"autostop": {
 				Type:        schema.TypeInt,
 				Optional:    true,
@@ -91,20 +103,86 @@ func resourceReadDatabase(ctx context.Context, d *schema.ResourceData, m interfa
 	tflog.Debug(ctx, "Reading database "+dbID, map[string]interface{}{"account": account})
 
 	database, resp, err := apiClient.DatabasesApi.GetDatabase(ctx, account, dbID).Execute()
-	if resp.StatusCode == 404 {
+	if resp != nil && resp.StatusCode == 404 {
 		d.SetId("")
 		return nil
 	}
-	if err != nil {
 
+	if err != nil {
 		return diag.FromErr(err)
 	}
 
-	err = d.Set("database", database)
+	err = d.Set("name", database.Name)
 	if err != nil {
 		return diag.FromErr(err)
+	}
+
+	mainCluster, diagnostics := getMainCluster(ctx, d, apiClient, account, database)
+	if diagnostics != nil {
+		return diagnostics
+	}
+
+	connection, resp, err := apiClient.ClustersApi.GetClusterConnection(ctx, account, database.Id, mainCluster.Id).Execute()
+	diagnostics = handleApiError(ctx, err, resp)
+	if diagnostics != nil {
+		return diagnostics
+	}
+
+	err = d.Set("dns", connection.Dns)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("port", connection.Port)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("main_cluster_id", mainCluster.Id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	err = d.Set("main_cluster_name", mainCluster.Name)
+	if err != nil {
+		return diag.FromErr(err)
+	}
+	if mainCluster.AutoStop != nil && mainCluster.AutoStop.Enabled {
+		err = d.Set("autostop", int(mainCluster.AutoStop.IdleTime))
+		if err != nil {
+			return diag.FromErr(err)
+		}
+	} else {
+		err = d.Set("autostop", nil)
+		if err != nil {
+			return diag.FromErr(err)
+		}
 	}
 	return nil
+}
+
+func getMainCluster(ctx context.Context, d *schema.ResourceData, apiClient *openapi.APIClient, account string, database *openapi.Database) (*openapi.Cluster, diag.Diagnostics) {
+	tflog.Debug(ctx, fmt.Sprintf("######## %v", d.Get("main_cluster_id")))
+	if d.Get("main_cluster_id") != "" {
+		mainCluster, resp, err := apiClient.ClustersApi.GetCluster(ctx, account, database.Id, d.Get("main_cluster_id").(string)).Execute()
+		diagnostics := handleApiError(ctx, err, resp)
+		if diagnostics != nil {
+			return nil, diagnostics
+		}
+		return mainCluster, nil
+	}
+
+	tflog.Debug(ctx, "########  Load clusters")
+
+	clusters, resp, err := apiClient.ClustersApi.ListClusters(ctx, account, database.Id).Execute()
+	diagnostics := handleApiError(ctx, err, resp)
+	if diagnostics != nil {
+		return nil, diagnostics
+	}
+
+	for _, cluster := range clusters {
+		if cluster.MainCluster {
+			return &cluster, nil
+		}
+	}
+	return nil, diag.Errorf("Main cluster not found")
 }
 
 func resourceUpdateDatabase(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -114,6 +192,7 @@ func resourceUpdateDatabase(ctx context.Context, d *schema.ResourceData, m inter
 	region := d.Get("region").(string)
 	//size := d.Get("size").(string)
 	dbID := d.Id()
+	mainClusterId := d.Get("main_cluster_id").(string)
 
 	if d.HasChange("name") {
 		oldName, newName := d.GetChange("name")
@@ -127,6 +206,10 @@ func resourceUpdateDatabase(ctx context.Context, d *schema.ResourceData, m inter
 		}
 	}
 
+	diagnostics := updateCluster(ctx, d, "main_cluster_name", account, dbID, mainClusterId, apiClient)
+	if diagnostics != nil {
+		return diagnostics
+	}
 	/*	if d.HasChange("size") {
 		oldSize, newSize := d.GetChange("size")
 		tflog.Debug(ctx, fmt.Sprintf("Resize database %s -> %s", oldSize.(string), newSize.(string)), map[string]interface{}{"region": region, "account": account})
@@ -147,19 +230,29 @@ func resourceCreateDatabase(ctx context.Context, d *schema.ResourceData, m inter
 	apiClient := config.Client
 	account := config.Account
 	name := d.Get("name").(string)
+	mainClusterName := d.Get("main_cluster_name").(string)
 	region := d.Get("region").(string)
 	size := d.Get("size").(string)
 
 	tflog.Debug(ctx, "Creating database"+name, map[string]interface{}{"region": region, "size": size, "account": account})
 
+	initialCluster := openapi.CreateCluster{
+		Name: mainClusterName,
+		Size: size,
+	}
+
+	if d.Get("autostop") != nil {
+		initialCluster.AutoStop = &openapi.AutoStop{
+			Enabled:  true,
+			IdleTime: int32(d.Get("autostop").(int)),
+		}
+	}
+
 	database, resp, err := apiClient.DatabasesApi.CreateDatabase(ctx, account).CreateDatabase(openapi.CreateDatabase{
-		Name: name,
-		InitialCluster: openapi.CreateCluster{
-			Name: "Main",
-			Size: size,
-		},
-		Provider: "aws",
-		Region:   region,
+		Name:           name,
+		InitialCluster: initialCluster,
+		Provider:       "aws",
+		Region:         region,
 	}).Execute()
 
 	diagnostics := handleApiError(ctx, err, resp)
@@ -169,17 +262,16 @@ func resourceCreateDatabase(ctx context.Context, d *schema.ResourceData, m inter
 	tflog.Debug(ctx, "Database created "+name, map[string]interface{}{"region": region, "size": size, "account": account, "id": database.Id})
 
 	d.SetId(database.Id)
-
 	err = resource.RetryContext(ctx, d.Timeout(schema.TimeoutCreate)-time.Minute, func() *resource.RetryError {
 		currentDBStatus, _, err := apiClient.DatabasesApi.GetDatabase(ctx, account, database.Id).Execute()
 		tflog.Debug(ctx, "Check database state for "+name, map[string]interface{}{"region": region, "size": size, "account": account, "id": database.Id})
 
 		if err != nil {
-			return resource.NonRetryableError(fmt.Errorf("Error describing database: %s", err))
+			return resource.NonRetryableError(fmt.Errorf("error describing database: %s", err))
 		}
 
 		if currentDBStatus.Status != openapi.RUNNING {
-			return resource.RetryableError(fmt.Errorf("Expected instance to be running but was in state %s", currentDBStatus.Status))
+			return resource.RetryableError(fmt.Errorf("expected instance to be running but was in state %s", currentDBStatus.Status))
 		}
 
 		return nil
@@ -200,7 +292,6 @@ func resourceCreateDatabase(ctx context.Context, d *schema.ResourceData, m inter
 		return diagnostics
 	}
 
-	initialSqlRaw := d.Get("initial_sql")
 	err = d.Set("dns", connection.Dns)
 	if err != nil {
 		return diag.FromErr(err)
@@ -209,8 +300,14 @@ func resourceCreateDatabase(ctx context.Context, d *schema.ResourceData, m inter
 	if err != nil {
 		return diag.FromErr(err)
 	}
+	err = d.Set("main_cluster_id", clusters[0].Id)
+	if err != nil {
+		return diag.FromErr(err)
+	}
 
+	initialSqlRaw := d.Get("initial_sql")
 	if initialSqlRaw != nil {
+		// TODO add retry, can happen that the DB is running but the user ist not there yet.
 		databaseClient, err := sql.Open("exasol", exasol.NewConfigWithRefreshToken(config.Token).
 			Port(int(connection.Port)).
 			Host(connection.Dns).
@@ -220,10 +317,18 @@ func resourceCreateDatabase(ctx context.Context, d *schema.ResourceData, m inter
 			return diag.FromErr(err)
 		}
 
+		var diags diag.Diagnostics
 		for _, sql := range initialSqlRaw.([]interface{}) {
 			if _, err := databaseClient.ExecContext(ctx, sql.(string)); err != nil {
-				return diag.FromErr(err)
+				diags = append(diags, diag.Diagnostic{
+					Severity:      diag.Warning,
+					Summary:       "Could not execute initial sql",
+					Detail:        err.Error(),
+				})
 			}
+		}
+		if len(diags) > 0 {
+			return diags
 		}
 
 	}

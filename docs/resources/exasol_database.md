@@ -25,12 +25,14 @@ description: |-
 
 - `autostop` (Number) Auto stop cluster after x minutes
 - `initial_sql` (List of String) Sql which will be run after database creation
+- `main_cluster_name` (String) The name of the main cluster
 - `timeouts` (Block, Optional) (see [below for nested schema](#nestedblock--timeouts))
 
 ### Read-Only
 
 - `dns` (String) DNS of the cluster
 - `id` (String) The ID of this resource.
+- `main_cluster_id` (String) Id of the main cluster
 - `port` (Number) DNS of the cluster
 
 <a id="nestedblock--timeouts"></a>
