@@ -102,9 +102,9 @@ func resourceUpdateNetwork(ctx context.Context, d *schema.ResourceData, m interf
 			Name:   newName.(string),
 			CidrIp: newCidr.(string),
 		}).Execute()
-		diagnostics := handleApiError(ctx, err, resp)
-		if diagnostics != nil {
-			return diagnostics
+
+		if err != nil {
+			return handleApiError(ctx, err, resp)
 		}
 	}
 	return nil
@@ -124,12 +124,12 @@ func resourceCreateNetwork(ctx context.Context, d *schema.ResourceData, m interf
 		CidrIp: cidr,
 	}).Execute()
 
-	diagnostics := handleApiError(ctx, err, resp)
-	if diagnostics != nil {
-		return diagnostics
+	if err != nil {
+		return handleApiError(ctx, err, resp)
 	}
+
 	tflog.Debug(ctx, "Cidr added "+name, map[string]interface{}{"cidr": cidr, "account": account, "id": ip.Id})
 
 	d.SetId(ip.Id)
-	return diag.FromErr(err)
+	return nil
 }

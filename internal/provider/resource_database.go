@@ -4,9 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
+
 	"github.com/exasol/exasol-driver-go"
 	openapi "github.com/exasol/terraform-provider-exasol-saas/internal/client"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
@@ -117,15 +118,15 @@ func resourceReadDatabase(ctx context.Context, d *schema.ResourceData, m interfa
 		return diag.FromErr(err)
 	}
 
-	mainCluster, diagnostics := getMainCluster(ctx, d, apiClient, account, database)
+	mainCluster, diagnostics := getMainCluster(ctx, d, apiClient, account, database.Id)
 	if diagnostics != nil {
 		return diagnostics
 	}
 
 	connection, resp, err := apiClient.ClustersApi.GetClusterConnection(ctx, account, database.Id, mainCluster.Id).Execute()
-	diagnostics = handleApiError(ctx, err, resp)
-	if diagnostics != nil {
-		return diagnostics
+
+	if err != nil {
+		return handleApiError(ctx, err, resp)
 	}
 
 	err = d.Set("dns", connection.Dns)
@@ -158,71 +159,42 @@ func resourceReadDatabase(ctx context.Context, d *schema.ResourceData, m interfa
 	return nil
 }
 
-func getMainCluster(ctx context.Context, d *schema.ResourceData, apiClient *openapi.APIClient, account string, database *openapi.Database) (*openapi.Cluster, diag.Diagnostics) {
-	tflog.Debug(ctx, fmt.Sprintf("######## %v", d.Get("main_cluster_id")))
-	if d.Get("main_cluster_id") != "" {
-		mainCluster, resp, err := apiClient.ClustersApi.GetCluster(ctx, account, database.Id, d.Get("main_cluster_id").(string)).Execute()
-		diagnostics := handleApiError(ctx, err, resp)
-		if diagnostics != nil {
-			return nil, diagnostics
-		}
-		return mainCluster, nil
-	}
-
-	tflog.Debug(ctx, "########  Load clusters")
-
-	clusters, resp, err := apiClient.ClustersApi.ListClusters(ctx, account, database.Id).Execute()
-	diagnostics := handleApiError(ctx, err, resp)
-	if diagnostics != nil {
-		return nil, diagnostics
-	}
-
-	for _, cluster := range clusters {
-		if cluster.MainCluster {
-			return &cluster, nil
-		}
-	}
-	return nil, diag.Errorf("Main cluster not found")
-}
-
 func resourceUpdateDatabase(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 	config := m.(*providerConfig)
 	apiClient := config.Client
 	account := config.Account
 	region := d.Get("region").(string)
-	//size := d.Get("size").(string)
 	dbID := d.Id()
 	mainClusterId := d.Get("main_cluster_id").(string)
 
 	if d.HasChange("name") {
 		oldName, newName := d.GetChange("name")
 		tflog.Debug(ctx, fmt.Sprintf("Renaming database %s -> %s", oldName.(string), newName.(string)), map[string]interface{}{"region": region, "account": account})
+
 		resp, err := apiClient.DatabasesApi.UpdateDatabase(ctx, account, dbID).UpdateDatabase(openapi.UpdateDatabase{
 			Name: newName.(string),
 		}).Execute()
-		diagnostics := handleApiError(ctx, err, resp)
-		if diagnostics != nil {
-			return diagnostics
+
+		if err != nil {
+			return handleApiError(ctx, err, resp)
 		}
 	}
 
-	diagnostics := updateCluster(ctx, d, "main_cluster_name", account, dbID, mainClusterId, apiClient)
-	if diagnostics != nil {
-		return diagnostics
-	}
-	/*	if d.HasChange("size") {
-		oldSize, newSize := d.GetChange("size")
-		tflog.Debug(ctx, fmt.Sprintf("Resize database %s -> %s", oldSize.(string), newSize.(string)), map[string]interface{}{"region": region, "account": account})
-		resp, err := apiClient.DatabasesApi.(ctx, account, dbID).UpdateDatabase(openapi.UpdateDatabase{
-			Name: newName.(string),
-		}).Execute()
-		diagnostics := handleApiError(ctx, err, resp)
+	if d.HasChange("size") {
+		mainCluster, diagnostics := getMainCluster(ctx, d, apiClient, account, dbID)
 		if diagnostics != nil {
 			return diagnostics
 		}
-	}*/
 
-	return nil
+		if mainCluster.Status != openapi.RUNNING {
+			diagnostics = startDatabase(ctx, d, apiClient, account, dbID)
+			if diagnostics != nil {
+				return diagnostics
+			}
+		}
+	}
+
+	return updateCluster(ctx, d, config, "main_cluster_name", dbID, mainClusterId)
 }
 
 func resourceCreateDatabase(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
@@ -321,9 +293,9 @@ func resourceCreateDatabase(ctx context.Context, d *schema.ResourceData, m inter
 		for _, sql := range initialSqlRaw.([]interface{}) {
 			if _, err := databaseClient.ExecContext(ctx, sql.(string)); err != nil {
 				diags = append(diags, diag.Diagnostic{
-					Severity:      diag.Warning,
-					Summary:       "Could not execute initial sql",
-					Detail:        err.Error(),
+					Severity: diag.Warning,
+					Summary:  "Could not execute initial sql, please make sure the database is reachable",
+					Detail:   err.Error(),
 				})
 			}
 		}

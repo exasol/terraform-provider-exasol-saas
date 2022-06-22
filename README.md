@@ -4,7 +4,6 @@ Not ready for productive use, interface can change anytime without any warning.
 
 # Exasol SaaS Terraform Provider
 
-
 This repository is built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk). 
 
 
