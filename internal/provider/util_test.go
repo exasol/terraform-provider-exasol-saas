@@ -31,7 +31,7 @@ func Test_containsStatus(t *testing.T) {
 		want     bool
 	}{
 		{name: "Contains value", values: []openapi.Status{openapi.RUNNING, openapi.STOPPED}, expected: openapi.RUNNING, want: true},
-		{name: "Not contains value", values: []openapi.Status{openapi.RUNNING, openapi.STOPPED}, expected: openapi.STOPPING, want: true},
+		{name: "Not contains value", values: []openapi.Status{openapi.RUNNING, openapi.STOPPED}, expected: openapi.STOPPING, want: false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
