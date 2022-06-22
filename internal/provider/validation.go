@@ -13,9 +13,7 @@ var validateName = validation.ToDiagFunc(validation.StringMatch(regexp.MustCompi
 
 func validateSize(i interface{}, path cty.Path) diag.Diagnostics {
 	sizes := []string{"XS", "S", "M", "L", "XL", "2XL", "3XL"}
-
 	size := i.(string)
-
 	if contains(sizes, size) {
 		return nil
 	}
@@ -32,9 +30,7 @@ func validateSize(i interface{}, path cty.Path) diag.Diagnostics {
 
 func validateRegions(i interface{}, path cty.Path) diag.Diagnostics {
 	regions := []string{"eu-central-1", "eu-west-2", "us-west-1", "us-west-2", "us-east-1", "us-east-2"}
-
 	region := i.(string)
-
 	if contains(regions, region) {
 		return nil
 	}

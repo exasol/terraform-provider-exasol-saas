@@ -47,7 +47,7 @@ func New(version string) func() *schema.Provider {
 			},
 			ResourcesMap: map[string]*schema.Resource{
 				"exasol_database":           resourceItemDatabase(),
-				"exasol_cluster":           resourceItemCluster(),
+				"exasol_cluster":            resourceItemCluster(),
 				"exasol_network_allow_list": resourceItemNetworkAllowList(),
 			},
 		}
