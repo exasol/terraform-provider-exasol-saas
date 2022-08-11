@@ -63,8 +63,8 @@ github.com/envoyproxy/go-control-plane v0.10.2-0.20220325020618-49ff273808a1/go.
 github.com/envoyproxy/protoc-gen-validate v0.1.0/go.mod h1:iSmxcyjqTsJpI2R4NaDN7+kN2VEUnK/pcBlmesArF7c=
 github.com/exasol/error-reporting-go v0.1.1 h1:J8o3sahm69OTp/WoRfdSap3f6+2zqoOHxVwoB5k4dio=
 github.com/exasol/error-reporting-go v0.1.1/go.mod h1:lUzRJqKLiSuYpqRUN2LVyj08WeHzhMEC/8Gmgtuqh1Y=
-github.com/exasol/exasol-driver-go v0.4.4 h1:0mlof8IzY5bLFfpsaPjnIH+7kDCnPKxZ8eShTqRaESY=
-github.com/exasol/exasol-driver-go v0.4.4/go.mod h1:eFKilqF7sM12fFaNPrn7c3tyQkv9MG0JgZ2wJLbLWc0=
+github.com/exasol/exasol-driver-go v0.4.5 h1:C5G2h/z9w2/teLed/tnHHqCJKu9mxQcfpC49iHEh4Mc=
+github.com/exasol/exasol-driver-go v0.4.5/go.mod h1:GqaJdxBXxKYlmkXh04Hp7XhuhKFw2FTkOhkWgMhMu28=
 github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5KwzbycvMj4=
 github.com/fatih/color v1.13.0 h1:8LOYc1KYPPmyKMuN8QV2DNRWNbLo6LZ0iLs8+mlH53w=
 github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYFFOfk=
