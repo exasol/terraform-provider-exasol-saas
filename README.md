@@ -7,7 +7,7 @@ Not ready for productive use, interface can change anytime without any warning.
 This repository is built on the [Terraform Plugin SDK](https://github.com/hashicorp/terraform-plugin-sdk). 
 
 
-## Requirements
+## Requirements Exigences
 
 - [Terraform](https://www.terraform.io/downloads.html) >= 0.13.x
 - [Go](https://golang.org/doc/install) >= 1.17
