@@ -3,7 +3,7 @@ module github.com/exasol/terraform-provider-exasol-saas
 go 1.19
 
 require (
-	github.com/exasol/exasol-driver-go v0.4.4
+	github.com/exasol/exasol-driver-go v0.4.6
 	github.com/hashicorp/go-cty v1.4.1-0.20200414143053-d3edf31b6320
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-log v0.7.0
