@@ -1,6 +1,6 @@
-# ! Under development !
+# ⚠️ Deprecated ⚠️
 
-Not ready for productive use, interface can change anytime without any warning. 
+This project is deprecated and not maintained any more.
 
 # Exasol SaaS Terraform Provider
 
